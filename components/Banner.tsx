@@ -25,37 +25,51 @@ const Banner = () => {
   }
 
   return (
-    <main className="mx-auto text-center space-y-8">
-      <h1 className="text-[45px] font-[600px] text-center leading-none">Transparencia Electoral para Honduras</h1>
-      <p className="text-[16px] font-[500px] text-center">
+    <main className="mx-auto text-center space-y-8 px-4">
+      <h1 className="text-3xl sm:text-[45px] font-[600px] text-center leading-tight">
+        Transparencia Electoral para Honduras
+      </h1>
+      <p className="text-sm sm:text-[16px] font-[500px] text-center max-w-2xl mx-auto">
         Luchamos contra el fraude electoral con tecnología blockchain avanzada. 
         Cada voto es transparente, verificable e inmutable.
       </p>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      {/* Contenedor de botones optimizado para móviles 🇭🇳 */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
         <button
           className="text-black h-[45px] w-[148px] rounded-full transition-all duration-300
-          border border-gray-400 bg-white hover:bg-opacity-20 hover:text-white"
+          border border-gray-400 bg-white hover:bg-opacity-20 hover:text-white
+          font-medium shadow-lg hover:shadow-xl transform hover:scale-105
+          focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
           onClick={onPressVote}
         >
-          Votar
+          🗳️ Votar
         </button>
         
         <button
           className="text-white h-[45px] w-[148px] rounded-full transition-all duration-300
-          border border-white bg-transparent hover:bg-white hover:text-black"
+          border border-white bg-transparent hover:bg-white hover:text-black
+          font-medium shadow-lg hover:shadow-xl transform hover:scale-105
+          focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
           onClick={onPressResults}
         >
-          Resultados
+          📊 Resultados
         </button>
         
         <button
           className="text-white h-[45px] w-[160px] rounded-full transition-all duration-300
-          border border-white bg-transparent hover:bg-white hover:text-black"
+          border border-white bg-transparent hover:bg-white hover:text-black
+          font-medium shadow-lg hover:shadow-xl transform hover:scale-105
+          focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
           onClick={onPressCreate}
         >
-          Crear Votación
+          ➕ Crear Votación
         </button>
+      </div>
+
+      {/* Mensaje de confianza para Honduras */}
+      <div className="mt-8 text-xs sm:text-sm text-white/80 italic">
+        🇭🇳 "Por una Honduras transparente y democrática"
       </div>
     </main>
   )
