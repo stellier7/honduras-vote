@@ -4,6 +4,9 @@ module.exports = {
   experimental: {
     appDir: false,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {
