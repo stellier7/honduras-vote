@@ -1,14 +1,85 @@
 import { store } from '@/store'
 import { ethers } from 'ethers'
 import { globalActions } from '@/store/globalSlices'
-import address from '@/artifacts/contractAddress.json'
-import abi from '@/artifacts/contracts/DappVotes.sol/DappVotes.json'
 import { ContestantStruct, PollParams, PollStruct, TruncateParams } from '@/utils/types'
 import { logOutWithCometChat } from './chat'
 
 const { setWallet, setPolls, setPoll, setContestants, setCurrentUser } = globalActions
-const ContractAddress = address.address
-const ContractAbi = abi.abi
+
+// Try to import artifacts, fallback to hardcoded values for production
+let ContractAddress: string
+let ContractAbi: any[]
+
+try {
+  // Development environment - use local artifacts
+  const address = require('@/artifacts/contractAddress.json')
+  const abi = require('@/artifacts/contracts/DappVotes.sol/DappVotes.json')
+  ContractAddress = address.address
+  ContractAbi = abi.abi
+} catch (error) {
+  // Production environment - use hardcoded values
+  ContractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+  // Essential ABI functions for the voting app
+  ContractAbi = [
+    {
+      "inputs": [{"internalType": "uint256", "name": "id", "type": "uint256"}, {"internalType": "string", "name": "name", "type": "string"}, {"internalType": "string", "name": "image", "type": "string"}],
+      "name": "contest",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType": "string", "name": "image", "type": "string"}, {"internalType": "string", "name": "title", "type": "string"}, {"internalType": "string", "name": "description", "type": "string"}, {"internalType": "uint256", "name": "startsAt", "type": "uint256"}, {"internalType": "uint256", "name": "endsAt", "type": "uint256"}],
+      "name": "createPoll",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType": "uint256", "name": "id", "type": "uint256"}],
+      "name": "deletePoll",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType": "uint256", "name": "id", "type": "uint256"}],
+      "name": "getContestants",
+      "outputs": [{"components": [{"internalType": "uint256", "name": "id", "type": "uint256"}, {"internalType": "string", "name": "image", "type": "string"}, {"internalType": "string", "name": "name", "type": "string"}, {"internalType": "address", "name": "voter", "type": "address"}, {"internalType": "uint256", "name": "votes", "type": "uint256"}, {"internalType": "address[]", "name": "voters", "type": "address[]"}], "internalType": "struct DappVotes.ContestantStruct[]", "name": "Contestants", "type": "tuple[]"}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType": "uint256", "name": "id", "type": "uint256"}],
+      "name": "getPoll",
+      "outputs": [{"components": [{"internalType": "uint256", "name": "id", "type": "uint256"}, {"internalType": "string", "name": "image", "type": "string"}, {"internalType": "string", "name": "title", "type": "string"}, {"internalType": "string", "name": "description", "type": "string"}, {"internalType": "uint256", "name": "votes", "type": "uint256"}, {"internalType": "uint256", "name": "contestants", "type": "uint256"}, {"internalType": "bool", "name": "deleted", "type": "bool"}, {"internalType": "address", "name": "director", "type": "address"}, {"internalType": "uint256", "name": "startsAt", "type": "uint256"}, {"internalType": "uint256", "name": "endsAt", "type": "uint256"}, {"internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"internalType": "address[]", "name": "voters", "type": "address[]"}, {"internalType": "address[]", "name": "avatars", "type": "address[]"}], "internalType": "struct DappVotes.PollStruct", "name": "poll", "type": "tuple"}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getPolls",
+      "outputs": [{"components": [{"internalType": "uint256", "name": "id", "type": "uint256"}, {"internalType": "string", "name": "image", "type": "string"}, {"internalType": "string", "name": "title", "type": "string"}, {"internalType": "string", "name": "description", "type": "string"}, {"internalType": "uint256", "name": "votes", "type": "uint256"}, {"internalType": "uint256", "name": "contestants", "type": "uint256"}, {"internalType": "bool", "name": "deleted", "type": "bool"}, {"internalType": "address", "name": "director", "type": "address"}, {"internalType": "uint256", "name": "startsAt", "type": "uint256"}, {"internalType": "uint256", "name": "endsAt", "type": "uint256"}, {"internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"internalType": "address[]", "name": "voters", "type": "address[]"}, {"internalType": "address[]", "name": "avatars", "type": "address[]"}], "internalType": "struct DappVotes.PollStruct[]", "name": "Polls", "type": "tuple[]"}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType": "uint256", "name": "id", "type": "uint256"}, {"internalType": "string", "name": "image", "type": "string"}, {"internalType": "string", "name": "title", "type": "string"}, {"internalType": "string", "name": "description", "type": "string"}, {"internalType": "uint256", "name": "startsAt", "type": "uint256"}, {"internalType": "uint256", "name": "endsAt", "type": "uint256"}],
+      "name": "updatePoll",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType": "uint256", "name": "id", "type": "uint256"}, {"internalType": "uint256", "name": "cid", "type": "uint256"}],
+      "name": "vote",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ]
+}
+
 let ethereum: any
 let tx: any
 
