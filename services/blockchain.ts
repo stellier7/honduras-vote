@@ -3,10 +3,14 @@ import { ethers } from 'ethers'
 import { globalActions } from '@/store/globalSlices'
 import { ContestantStruct, PollParams, PollStruct, TruncateParams } from '@/utils/types'
 import { logOutWithCometChat } from './chat'
+import { getNetworkConfig } from '@/config/networks'
 
 const { setWallet, setPolls, setPoll, setContestants, setCurrentUser } = globalActions
 
-// Try to import artifacts, fallback to hardcoded values for production
+// Get current network configuration
+const networkConfig = getNetworkConfig()
+
+// Try to import artifacts, fallback to network config for production
 let ContractAddress: string
 let ContractAbi: any[]
 
@@ -17,8 +21,8 @@ try {
   ContractAddress = address.address
   ContractAbi = abi.abi
 } catch (error) {
-  // Production environment - use hardcoded values
-  ContractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+  // Production environment - use network configuration
+  ContractAddress = networkConfig.contractAddress || '0x5FbDB2315678afecb367f032d93F642f64180aa3'
   // Essential ABI functions for the voting app
   ContractAbi = [
     {
@@ -91,7 +95,7 @@ const getEthereumContract = async () => {
   const accounts = await ethereum?.request?.({ method: 'eth_accounts' })
   const provider = accounts?.[0]
     ? new ethers.providers.Web3Provider(ethereum)
-    : new ethers.providers.JsonRpcProvider(process.env.NEXT_APP_RPC_URL)
+    : new ethers.providers.JsonRpcProvider(networkConfig.rpcUrl)
   const wallet = accounts?.[0] ? null : ethers.Wallet.createRandom()
   const signer = provider.getSigner(accounts?.[0] ? undefined : wallet?.address)
 
